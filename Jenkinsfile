@@ -1,14 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        // Specify tool versions if needed
-    }
-
-    environment {
-        PYTHONPATH = '.'
-    }
-
     stages {
         stage('Checkout code') {
             steps {
