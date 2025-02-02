@@ -44,7 +44,7 @@ pipeline {
                     // Activate the virtual environment and run tests using pytest
                     bat """
                         call .venv\\Scripts\\activate
-                        pytest --task=${params.task} --junitxml=test-results.xml
+                        pytest --get_task=${params.task} --junitxml=test-results.xml
                     """
                 }
             }
