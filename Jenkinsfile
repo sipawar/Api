@@ -46,6 +46,11 @@ pipeline {
                         call .venv\\Scripts\\activate
                         pytest --get_task=${params.task} --junitxml=test-results.xml
                     """
+                     step([$class: 'FlakyTestReporter',
+                        testResultFile: 'results.xml',
+                        re-runTestResultFile: 'retest-results.xml',
+                        maxRuns: 3,
+                        reRunIfUnstable: true])
                 }
             }
             post {
