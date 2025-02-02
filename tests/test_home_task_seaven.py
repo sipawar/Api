@@ -17,7 +17,7 @@ class TestHomeTaskSeaven:
             print(url)
             res = requests.get(url)
             assert res.status_code == 200
-            res_json = res.jso xn()
+            res_json = res.json()
             print(f"current status is {res_json['weather']}")
             return res_json['coord']['lon'], res_json['coord']['lat']
 

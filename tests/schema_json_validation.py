@@ -1,6 +1,5 @@
 import json
 from jsonschema import validate, ValidationError
-
 # Define the JSON schema
 schema = {
     "type": "object",
