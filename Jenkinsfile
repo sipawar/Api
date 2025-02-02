@@ -28,7 +28,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    bat 'call .venv\\Scripts\\activate && pip install -r requirements.txt'
+                    bat 'call .venv\\Scripts\\activate && pip install -r requirements.txt pytest-rerunfailures'
+                    // Ensure pytest-rerunfailures is installed along with other dependencies
                 }
             }
         }
@@ -37,22 +38,17 @@ pipeline {
             steps {
                 script {
                     echo "Running tests on task: ${params.task}"
-                    def attempts = 3
-                    def runTests = {
-                        bat """
-                            call .venv\\Scripts\\activate
-                            pytest -v -s --get_task=${params.task} --junit-xml=test-results.xml
+                    bat """
+                        call .venv\\Scripts\\activate
+                        pytest -v -s  --get_task=${params.task} --junit-xml=test-results.xml --reruns 3
                         """
-                        // If the bat command fails, it throws an exception and retry logic kicks in
-                    }
-                    retry(attempts) {
-                        runTests()
-                    }
+                    // Integration of pytest-rerunfailures with reruns flag
                 }
             }
             post {
                 always {
                     junit 'test-results.xml'
+                    // Collect and record test reports
                 }
             }
         }
@@ -61,6 +57,7 @@ pipeline {
         always {
             script {
                 bat 'call .venv\\Scripts\\deactivate'
+                // Deactivate the Python virtual environment
             }
             deleteDir() // Clean workspace after the run for a fresh start next time
         }
