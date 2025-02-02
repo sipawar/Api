@@ -8,13 +8,14 @@ pipeline {
 
     environment {
         PYTHONPATH = '.'
-        PATH = "C:\\Users\\siddhikaarjun_pawar\\AppData\\Local\\Programs\\Python\\Python313;$PATH"
+        // Ensure that PATH modification persists across all shell executions
+        PATH = "${env.PATH};C:\\Users\\siddhikaarjun_pawar\\AppData\\Local\\Programs\\Python\\Python313"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm  // Assuming SCM setup is configured in Jenkins project settings
+                checkout scm // Assuming SCM setup is configured in Jenkins project settings
             }
         }
 
@@ -23,7 +24,6 @@ pipeline {
                 script {
                     // Creating and activating the virtual environment
                     bat 'python -m venv .venv'
-                    bat 'call .venv\\Scripts\\activate'
                 }
             }
         }
@@ -31,7 +31,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install dependencies
+                    // Activate virtual environment and install dependencies
                     bat 'call .venv\\Scripts\\activate && pip install -r requirements.txt'
                 }
             }
@@ -44,19 +44,20 @@ pipeline {
                     // Activate the virtual environment and run tests using pytest
                     bat """
                         call .venv\\Scripts\\activate
-                        pytest --get_task=${params.task} --junitxml=test-results.xml
+                        pytest --get_task=${params.task} --junit-xml=test-results.xml
                     """
-                     step([$class: 'FlakyTestReporter',
-                        testResultFile: 'results.xml',
-                        re-runTestResultFile: 'retest-results.xml',
-                        maxRuns: 3,
-                        reRunIfUnstable: true])
+                    // Note: Corrected '--junitxml' flag to '--junit-xml' for pytest
                 }
             }
             post {
                 always {
-                    // Ensure to use the correct results file name
+                    // Capture test results and utilize flaky test handling
                     junit 'test-results.xml'
+                    step([$class: 'FlakyTestReporter',
+                        testResultFile: 'test-results.xml', // Ensure file name matches generated XML
+                        reRunTestResultFile: 'retest-results.xml',
+                        maxRuns: 3,
+                        reRunIfUnstable: true])
                 }
             }
         }
@@ -67,6 +68,8 @@ pipeline {
             script {
                 bat 'call .venv\\Scripts\\deactivate'
             }
+            // Clean-up step: Deleting virtual environment directory if needed
+            deleteDir()
         }
     }
 }
