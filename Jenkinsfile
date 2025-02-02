@@ -1,9 +1,13 @@
 pipeline {
     agent any
 
+    parameters {
+        // Define parameter used in 'Run Tests' stage
+        string(name: 'task', defaultValue: 'default_task', description: 'Task to run')
+    }
+
     environment {
         PYTHONPATH = '.'
-        // Ensure the directory containing python.exe is in PATH
         PATH = "C:\\Users\\siddhikaarjun_pawar\\AppData\\Local\\Programs\\Python\\Python313;$PATH"
     }
 
@@ -17,10 +21,8 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 script {
-                    // Creating a virtual environment in the .venv directory
+                    // Creating and activating the virtual environment
                     bat 'python -m venv .venv'
-
-                    // Activating the virtual environment
                     bat 'call .venv\\Scripts\\activate'
                 }
             }
@@ -29,7 +31,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Ensure virtual environment is activated before installing dependencies
+                    // Install dependencies
                     bat 'call .venv\\Scripts\\activate && pip install -r requirements.txt'
                 }
             }
@@ -38,21 +40,25 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Running pytest and generating a JUnit-compatible XML report
-                    bat 'call .venv\\Scripts\\activate && pytest --junitxml=results.xml'
+                    echo "Running tests on task: ${params.task}"
+                    // Activate the virtual environment and run tests using pytest
+                    bat """
+                        call .venv\\Scripts\\activate
+                        pytest --task=${params.task} --junitxml=test-results.xml
+                    """
                 }
             }
             post {
                 always {
-                    // Publish the JUnit test results
-                    junit 'results.xml'
+                    // Ensure to use the correct results file name
+                    junit 'test-results.xml'
                 }
             }
         }
     }
     post {
         always {
-            // Deactivate and clean up if needed
+            // Deactivate the virtual environment and clean up
             script {
                 bat 'call .venv\\Scripts\\deactivate'
             }
