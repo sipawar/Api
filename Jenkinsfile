@@ -1,16 +1,24 @@
 pipeline {
     agent any
 
-    parameters {
-        string(name: 'task', defaultValue: 'default_task', description: 'Task to run')
-    }
-
     environment {
-        PYTHONPATH = '.'
-        PATH = "${env.PATH};C:\\Users\\siddhikaarjun_pawar\\AppData\\Local\\Programs\\Python\\Python313"
+        PYTHONPATH = '.' // Typically the Python import path, though often unnecessary to set explicitly.
     }
 
     stages {
+        stage('Setup Environment Variables') {
+            steps {
+                script {
+                    // Dynamically set the PATH to include the Python directory according to the agent's OS
+                    if (isUnix()) {
+                        sh 'export PATH=$PATH:$PYTHON_DIR'
+                    } else {
+                        bat 'set PATH=%PATH%;%PYTHON_DIR%'
+                    }
+                }
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 checkout scm // Assuming SCM setup is configured in Jenkins project settings
@@ -20,7 +28,8 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 script {
-                    bat 'python -m venv .venv'
+                    // Use environmental variable for python execution
+                    bat '%PYTHON_DIR%\\python -m venv .venv'
                 }
             }
         }
@@ -40,7 +49,7 @@ pipeline {
                     echo "Running tests on task: ${params.task}"
                     bat """
                         call .venv\\Scripts\\activate
-                        pytest -v -s  --get_task=${params.task} --junit-xml=test-results.xml --reruns 3
+                        pytest -v -s --get_task=${params.task} --junit-xml=test-results.xml --reruns 3
                         """
                     // Integration of pytest-rerunfailures with reruns flag
                 }
