@@ -17,7 +17,7 @@ pipeline {
             }
         }
 
-        stage('Checkout Code') {z
+        stage('Checkout Code')
             steps {
                 checkout scm // Assuming SCM setup is configured in Jenkins project settings
             }
