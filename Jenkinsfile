@@ -1,10 +1,8 @@
 pipeline {
     agent any
 
-
     stages {
         stage('Setup Environment Variables') {
-
             steps {
                 script {
                     // Dynamically set the PATH to include the Python directory according to the agent's OS
@@ -17,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Checkout Code')
+        stage('Checkout Code') { // Added missing opening brace here
             steps {
                 checkout scm // Assuming SCM setup is configured in Jenkins project settings
             }
@@ -48,7 +46,7 @@ pipeline {
                     bat """
                         call .venv\\Scripts\\activate
                         pytest -v -s --get_task=${params.task} --junit-xml=test-results.xml --reruns 3
-                        """
+                    """
                     // Integration of pytest-rerunfailures with reruns flag
                 }
             }
