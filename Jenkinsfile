@@ -1,12 +1,10 @@
 pipeline {
     agent any
 
-    environment {
-        PYTHONPATH = '.' // Typically the Python import path, though often unnecessary to set explicitly.
-    }
 
     stages {
         stage('Setup Environment Variables') {
+
             steps {
                 script {
                     // Dynamically set the PATH to include the Python directory according to the agent's OS
@@ -19,7 +17,7 @@ pipeline {
             }
         }
 
-        stage('Checkout Code') {
+        stage('Checkout Code') {z
             steps {
                 checkout scm // Assuming SCM setup is configured in Jenkins project settings
             }
@@ -37,7 +35,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    bat 'call .venv\\Scripts\\activate && pip install -r requirements.txt pytest-rerunfailures'
+                    bat 'call .venv\\Scripts\\activate && pip install -r requirements.txt'
                     // Ensure pytest-rerunfailures is installed along with other dependencies
                 }
             }
